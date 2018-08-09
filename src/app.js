@@ -3,15 +3,26 @@ const conf = require('./config/defaultConfig');
 const chalk = require('chalk');
 const path = require('path');
 const route = require('./helper/route');
+const openUrl = require('./helper/openUrl');
 
+class Server {
+    constructor(config) {
+        this.conf = Object.assign({}, conf, config);
+    }
 
+    start() {
+        const server = http.createServer((req, res) => {
+            const pathUrl = path.join(this.conf.root, req.url);
+            route(req, res, pathUrl, this.conf);
+        });
+        
+        server.listen(this.conf.port, this.conf.hostname, () => {
+            const addr = `http://${this.conf.hostname}:${this.conf.port}`;
+            console.info(`Server started at ${chalk.green(addr)}`);
+            openUrl(addr);
+        });
+    }
+}
 
-const server = http.createServer((req, res) => {
-	const pathUrl = path.join(conf.root, req.url);
-	route(req, res, pathUrl);
-});
+module.exports = Server;
 
-server.listen(conf.port, conf.hostname, () => {
-	const addr = `http://${conf.hostname}:${conf.port}`;
-	console.info(`Server started at ${chalk.green(addr)}`);
-});
